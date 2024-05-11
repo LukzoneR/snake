@@ -16,6 +16,17 @@ int sizeCell = 30;
 int count = 25;
 //size*count = wymiary planszy
 
+/////////////////////////////////////////////////////////spowolnienie węża
+double lastUpdateTime = 0;
+
+bool event(double interval){
+    double currentTime = GetTime();
+    if(currentTime - lastUpdateTime >= interval){
+        lastUpdateTime = currentTime;
+        return true;
+    }
+    return false;
+}
 
 //////////////////////////////////////////////////////////klasy
 class Food{
@@ -33,11 +44,14 @@ class Food{
 class Snake{
 
     public:
-        deque<Vector2> body = {{2,3}, {3,3}, {4,3}}; 
+        deque<Vector2> body = {{2,3}, {3,3}, {4,3}};
+
+        
         Vector2 directionXR = {1,0};
         Vector2 directionXL = {-1,0};
         Vector2 directionYU = {0,-1};
         Vector2 directionYD = {0,1};
+        Vector2 direction = directionXR;
 
         void Draw(){
             for(int i = 0; i < body.size(); i++){
@@ -52,10 +66,10 @@ class Snake{
 
             //right
             body.pop_front();
-            body.push_back(Vector2Add(body[1], directionXR));
+            body.push_back(Vector2Add(body[body.size()-1], direction));
 
             //slower snake moving
-            this_thread::sleep_for(chrono::milliseconds(200));
+           
 
             
         }
@@ -71,10 +85,15 @@ int main()
     const int screenHeight = 750;
 
     InitWindow(screenWidth, screenHeight, "Snake");
-    SetTargetFPS(75);
+    SetTargetFPS(60);
 
     Food food;
     Snake snake;
+
+    bool left = false;
+    bool right = true;
+    bool up = false;
+    bool down = false;
 
     while (!WindowShouldClose())
     {
@@ -82,7 +101,37 @@ int main()
         ClearBackground(color);
         food.Draw();
         snake.Draw();
-        snake.Update();
+
+        if(event(0.2)){
+            snake.Update();
+        }
+        
+        if(IsKeyPressed(KEY_UP) && (right == true || left == true) && down == false){
+            snake.direction = snake.directionYU;
+            left = false;
+            right = false;
+            down = false;
+            up = true;
+        }else if(IsKeyPressed(KEY_DOWN) && (right == true || left == true) && up == false){
+            snake.direction = snake.directionYD;
+            left = false;
+            right = false;
+            down = true;
+            up = false;
+        }else if(IsKeyPressed(KEY_RIGHT) && (up == true || down == true) && left == false){
+            snake.direction = snake.directionXR;
+            left = false;
+            right = true;
+            down = false;
+            up = false;
+        }else if(IsKeyPressed(KEY_LEFT) && (up == true || down == true) && right == false){
+            snake.direction = snake.directionXL;
+            left = true;
+            right = false;
+            down = false;
+            up = false;
+        }
+
         EndDrawing();
         
     }
