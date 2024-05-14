@@ -67,10 +67,6 @@ class Snake{
             //right
             body.pop_front();
             body.push_back(Vector2Add(body[body.size()-1], direction));
-
-            //slower snake moving
-           
-
             
         }
 };
