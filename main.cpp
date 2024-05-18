@@ -30,7 +30,7 @@ bool event(double interval){
 
 //////////////////////////////////////////////////////////klasy
 class Food{
-
+public:
     int positionX = GetRandomValue(0,count-1);
     int positionY = GetRandomValue(0,count-1);
 
@@ -67,8 +67,33 @@ class Snake{
             //right
             body.pop_front();
             body.push_back(Vector2Add(body[body.size()-1], direction));
-            
+
         }
+};
+
+class Game{
+public:
+    Snake snake = Snake();
+    Food food = Food();
+
+    void Draw(){
+        snake.Draw();
+        food.Draw();
+    }
+
+    void Update(){
+        snake.Update();
+    }
+
+    void foodCollision(){
+        int counter = 0;
+        Vector2 foodPos={food.positionX, food.positionY};
+        if(Vector2Equals(foodPos, snake.body[snake.body.size()-1])){
+            food.positionX = GetRandomValue(0,count-1);
+            food.positionY = GetRandomValue(0,count-1);
+            counter++;
+        };
+    }
 };
 
 
@@ -83,8 +108,7 @@ int main()
     InitWindow(screenWidth, screenHeight, "Snake");
     SetTargetFPS(60);
 
-    Food food;
-    Snake snake;
+    Game game;
 
     bool left = false;
     bool right = true;
@@ -95,38 +119,40 @@ int main()
     {
         BeginDrawing();
         ClearBackground(color);
-        food.Draw();
-        snake.Draw();
+
+        game.Draw();
 
         if(event(0.2)){
-            snake.Update();
+            game.Update();
         }
         
         if(IsKeyPressed(KEY_UP) && (right == true || left == true) && down == false){
-            snake.direction = snake.directionYU;
+            game.snake.direction = game.snake.directionYU;
             left = false;
             right = false;
             down = false;
             up = true;
         }else if(IsKeyPressed(KEY_DOWN) && (right == true || left == true) && up == false){
-            snake.direction = snake.directionYD;
+            game.snake.direction = game.snake.directionYD;
             left = false;
             right = false;
             down = true;
             up = false;
         }else if(IsKeyPressed(KEY_RIGHT) && (up == true || down == true) && left == false){
-            snake.direction = snake.directionXR;
+            game.snake.direction = game.snake.directionXR;
             left = false;
             right = true;
             down = false;
             up = false;
         }else if(IsKeyPressed(KEY_LEFT) && (up == true || down == true) && right == false){
-            snake.direction = snake.directionXL;
+            game.snake.direction = game.snake.directionXL;
             left = true;
             right = false;
             down = false;
             up = false;
         }
+
+        game.foodCollision();
 
         EndDrawing();
         
