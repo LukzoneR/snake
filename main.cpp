@@ -75,6 +75,7 @@ class Game{
 public:
     Snake snake = Snake();
     Food food = Food();
+    int counter = 0;
 
     void Draw(){
         snake.Draw();
@@ -86,13 +87,30 @@ public:
     }
 
     void foodCollision(){
-        int counter = 0;
         Vector2 foodPos={food.positionX, food.positionY};
         if(Vector2Equals(foodPos, snake.body[snake.body.size()-1])){
             food.positionX = GetRandomValue(0,count-1);
             food.positionY = GetRandomValue(0,count-1);
+            snake.body.push_front(snake.body[0]);
             counter++;
         };
+    }
+
+    bool boardCollision(){
+        Vector2 left = {-1, snake.body[snake.body.size()-1].y};
+        Vector2 right = {25, snake.body[snake.body.size()-1].y};
+        Vector2 up = {snake.body[snake.body.size()-1].x, -1};
+        Vector2 down = {snake.body[snake.body.size()-1].x, 25};
+
+        if(Vector2Equals(left, snake.body[snake.body.size()-1]) || Vector2Equals(right, snake.body[snake.body.size()-1]) || Vector2Equals(up, snake.body[snake.body.size()-1]) || Vector2Equals(down, snake.body[snake.body.size()-1])){
+            snake.body = {{2,3}, {3,3}, {4,3}};
+            snake.direction = snake.directionXR;
+            snake.Update();
+            counter = 0;
+        };
+
+        return true;
+
     }
 };
 
@@ -125,6 +143,8 @@ int main()
         if(event(0.2)){
             game.Update();
         }
+
+        game.boardCollision();    
         
         if(IsKeyPressed(KEY_UP) && (right == true || left == true) && down == false){
             game.snake.direction = game.snake.directionYU;
