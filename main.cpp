@@ -13,7 +13,7 @@ Color snakeColor = {200,200,200,255};
 
 /////////////////////////////////////////////////////wymiary komórek planszy
 int sizeCell = 30;
-int count = 25;
+int count = 20;
 //size*count = wymiary planszy
 
 /////////////////////////////////////////////////////////spowolnienie węża
@@ -98,19 +98,37 @@ public:
 
     bool boardCollision(){
         Vector2 left = {-1, snake.body[snake.body.size()-1].y};
-        Vector2 right = {25, snake.body[snake.body.size()-1].y};
+        Vector2 right = {count, snake.body[snake.body.size()-1].y};
         Vector2 up = {snake.body[snake.body.size()-1].x, -1};
-        Vector2 down = {snake.body[snake.body.size()-1].x, 25};
+        Vector2 down = {snake.body[snake.body.size()-1].x, count};
 
         if(Vector2Equals(left, snake.body[snake.body.size()-1]) || Vector2Equals(right, snake.body[snake.body.size()-1]) || Vector2Equals(up, snake.body[snake.body.size()-1]) || Vector2Equals(down, snake.body[snake.body.size()-1])){
             snake.body = {{2,3}, {3,3}, {4,3}};
             snake.direction = snake.directionXR;
             snake.Update();
             counter = 0;
-        };
+            return true;
+        }else{
+            return false;
+        }
 
-        return true;
+    }
 
+    bool tailCollision(){
+        Vector2 head = snake.body[snake.body.size()-1];
+
+        for(int i = 0; i < snake.body.size() - 1; i++){
+            if(Vector2Equals(snake.body[i], head)){
+                snake.body = {{2,3}, {3,3}, {4,3}};
+                snake.direction = snake.directionXR;
+                snake.Update();
+                counter = 0;
+                return true;
+            }
+            
+        }
+
+        return false;
     }
 };
 
@@ -120,8 +138,8 @@ public:
 int main()
 {
 
-    const int screenWidth = 750;
-    const int screenHeight = 750;
+    const int screenWidth = 600;
+    const int screenHeight = 600;
 
     InitWindow(screenWidth, screenHeight, "Snake");
     SetTargetFPS(60);
@@ -144,7 +162,14 @@ int main()
             game.Update();
         }
 
-        game.boardCollision();    
+
+        if(game.boardCollision() || game.tailCollision()){
+            right = true;
+            left = false;
+            up = false;
+            down = false;
+        }
+
         
         if(IsKeyPressed(KEY_UP) && (right == true || left == true) && down == false){
             game.snake.direction = game.snake.directionYU;
@@ -152,6 +177,9 @@ int main()
             right = false;
             down = false;
             up = true;
+            
+
+            
         }else if(IsKeyPressed(KEY_DOWN) && (right == true || left == true) && up == false){
             game.snake.direction = game.snake.directionYD;
             left = false;
