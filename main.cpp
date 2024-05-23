@@ -8,10 +8,10 @@
 using namespace std;
 
 //////////////////////////////////////////////////////kolory
-Color color = {25,25,52,255};
-Color foodColor = {100,100,100,255};
-Color snakeColor = {200,200,200,255};
-Color background = {150, 150, 150, 255};
+Color color = {255,255,255,255};
+Color foodColor = {255,255,255,255};
+Color snakeColor = {132,94,194,255};
+Color background = {255, 150, 113, 255};
 
 /////////////////////////////////////////////////////wymiary planszy
 int sizeCell = 30;
@@ -155,8 +155,8 @@ int main()
 
     cout<<"Starting.."<<endl;
 
-    const int screenWidth = 600;
-    const int screenHeight = 600;
+    const int screenWidth = sizeCell * count;
+    const int screenHeight = sizeCell * count;
 
     InitWindow(2*border + screenWidth, 2*border + screenHeight, "Snake");
     SetTargetFPS(60);
@@ -219,6 +219,8 @@ int main()
 
         game.foodCollision();
         DrawRectangleLinesEx(Rectangle{(float)border-5, (float)border-5, (float)sizeCell*count + 10, (float)sizeCell*count + 10}, 5, color);
+        DrawText("Snake", screenWidth/2 + border/2, 20, 30, color);
+        DrawText(TextFormat("%i", counter), screenWidth/2 + border, screenHeight + 2*border - border/2, 30, color);
         EndDrawing();
         
     }
