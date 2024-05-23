@@ -3,6 +3,7 @@
 #include <raymath.h>
 #include <chrono>
 #include <thread>
+#include <iostream>
 
 using namespace std;
 
@@ -10,11 +11,16 @@ using namespace std;
 Color color = {25,25,52,255};
 Color foodColor = {100,100,100,255};
 Color snakeColor = {200,200,200,255};
+Color background = {150, 150, 150, 255};
 
-/////////////////////////////////////////////////////wymiary komórek planszy
+/////////////////////////////////////////////////////wymiary planszy
 int sizeCell = 30;
 int count = 20;
 //size*count = wymiary planszy
+int border = 75;
+
+//////////////////////////////////////////////////////licznik punktów
+int counter = 0;
 
 /////////////////////////////////////////////////////////spowolnienie węża
 double lastUpdateTime = 0;
@@ -29,6 +35,9 @@ bool event(double interval){
 }
 
 //////////////////////////////////////////////////////////klasy
+
+////////////////////////////////////////////////////klasa Food
+
 class Food{
 public:
     int positionX = GetRandomValue(0,count-1);
@@ -36,10 +45,12 @@ public:
 
     public:
         void Draw(){
-            DrawRectangle(positionX * sizeCell, positionY * sizeCell, sizeCell, sizeCell, foodColor);
+            DrawRectangle(border + positionX * sizeCell, border + positionY * sizeCell, sizeCell, sizeCell, foodColor);
         }
 
 };
+
+///////////////////////////////////////////////////////////////////klasa Snake
 
 class Snake{
 
@@ -58,7 +69,7 @@ class Snake{
                 int x = body[i].x;
                 int y = body[i].y;
 
-                DrawRectangle(x * sizeCell, y * sizeCell, sizeCell, sizeCell, snakeColor);
+                DrawRectangle(border + x * sizeCell, border + y * sizeCell, sizeCell, sizeCell, snakeColor);
             }
         }
 
@@ -69,13 +80,23 @@ class Snake{
             body.push_back(Vector2Add(body[body.size()-1], direction));
 
         }
+
+        void Reset(){
+            body = {{2,3}, {3,3}, {4,3}};
+            direction = directionXR;
+            Update();
+            counter = 0;
+        }
 };
+
+
+////////////////////////////////////////////////////////klasa Game
 
 class Game{
 public:
     Snake snake = Snake();
     Food food = Food();
-    int counter = 0;
+    
 
     void Draw(){
         snake.Draw();
@@ -87,7 +108,7 @@ public:
     }
 
     void foodCollision(){
-        Vector2 foodPos={food.positionX, food.positionY};
+        Vector2 foodPos={(float)food.positionX, (float)food.positionY};
         if(Vector2Equals(foodPos, snake.body[snake.body.size()-1])){
             food.positionX = GetRandomValue(0,count-1);
             food.positionY = GetRandomValue(0,count-1);
@@ -98,15 +119,12 @@ public:
 
     bool boardCollision(){
         Vector2 left = {-1, snake.body[snake.body.size()-1].y};
-        Vector2 right = {count, snake.body[snake.body.size()-1].y};
+        Vector2 right = {(float)count, snake.body[snake.body.size()-1].y};
         Vector2 up = {snake.body[snake.body.size()-1].x, -1};
-        Vector2 down = {snake.body[snake.body.size()-1].x, count};
+        Vector2 down = {snake.body[snake.body.size()-1].x, (float)count};
 
         if(Vector2Equals(left, snake.body[snake.body.size()-1]) || Vector2Equals(right, snake.body[snake.body.size()-1]) || Vector2Equals(up, snake.body[snake.body.size()-1]) || Vector2Equals(down, snake.body[snake.body.size()-1])){
-            snake.body = {{2,3}, {3,3}, {4,3}};
-            snake.direction = snake.directionXR;
-            snake.Update();
-            counter = 0;
+            snake.Reset();
             return true;
         }else{
             return false;
@@ -119,10 +137,7 @@ public:
 
         for(int i = 0; i < snake.body.size() - 1; i++){
             if(Vector2Equals(snake.body[i], head)){
-                snake.body = {{2,3}, {3,3}, {4,3}};
-                snake.direction = snake.directionXR;
-                snake.Update();
-                counter = 0;
+                snake.Reset();
                 return true;
             }
             
@@ -138,10 +153,12 @@ public:
 int main()
 {
 
+    cout<<"Starting.."<<endl;
+
     const int screenWidth = 600;
     const int screenHeight = 600;
 
-    InitWindow(screenWidth, screenHeight, "Snake");
+    InitWindow(2*border + screenWidth, 2*border + screenHeight, "Snake");
     SetTargetFPS(60);
 
     Game game;
@@ -154,15 +171,18 @@ int main()
     while (!WindowShouldClose())
     {
         BeginDrawing();
-        ClearBackground(color);
+        ClearBackground(background);
 
         game.Draw();
 
+
+        ///////////////////////////////////////////////////////////////////////////ustawienie szybkości poruszania się węża
         if(event(0.2)){
             game.Update();
         }
 
 
+        /////////////////////////////////////////////////////////////////////////////////////////reakcja na kolizje
         if(game.boardCollision() || game.tailCollision()){
             right = true;
             left = false;
@@ -170,16 +190,13 @@ int main()
             down = false;
         }
 
-        
+        ///////////////////////////////////////////////////////////////////////////////////////////////poruszanie się węża
         if(IsKeyPressed(KEY_UP) && (right == true || left == true) && down == false){
             game.snake.direction = game.snake.directionYU;
             left = false;
             right = false;
             down = false;
-            up = true;
-            
-
-            
+            up = true; 
         }else if(IsKeyPressed(KEY_DOWN) && (right == true || left == true) && up == false){
             game.snake.direction = game.snake.directionYD;
             left = false;
@@ -201,7 +218,7 @@ int main()
         }
 
         game.foodCollision();
-
+        DrawRectangleLinesEx(Rectangle{(float)border-5, (float)border-5, (float)sizeCell*count + 10, (float)sizeCell*count + 10}, 5, color);
         EndDrawing();
         
     }
