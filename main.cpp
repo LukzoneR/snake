@@ -34,24 +34,20 @@ bool event(double interval){
     return false;
 }
 
-//////////////////////////////////////////////////////////klasy
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////klasy
 ////////////////////////////////////////////////////klasa Food
-
 class Food{
 public:
     int positionX = GetRandomValue(0,count-1);
     int positionY = GetRandomValue(0,count-1);
 
-    public:
-        void Draw(){
-            DrawRectangle(border + positionX * sizeCell, border + positionY * sizeCell, sizeCell, sizeCell, foodColor);
-        }
+    void Draw(){
+        DrawRectangle(border + positionX * sizeCell, border + positionY * sizeCell, sizeCell, sizeCell, foodColor);
+    }
 
 };
 
 ///////////////////////////////////////////////////////////////////klasa Snake
-
 class Snake{
 
     public:
@@ -90,7 +86,6 @@ class Snake{
 
 
 ////////////////////////////////////////////////////////klasa Game
-
 class Game{
 public:
     Snake snake = Snake();
@@ -165,7 +160,6 @@ public:
 
 
 ///////////////////////////////////////////////////////////////////////funkcja zliczająca rekord
-
 int highscore = 0;
 int highCounter(int counter){
 
@@ -257,7 +251,7 @@ int main()
         highCounter(counter);
 
 
-        //////////////////////////////////////////////////////////////////////////////////////////////////rysowanie
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////rysowanie
         DrawRectangleLinesEx(Rectangle{(float)border-5, (float)border-5, (float)sizeCell*count + 10, (float)sizeCell*count + 10}, 5, color);
         DrawText("Snake", screenWidth/2 + border/2, 20, 30, color);
         DrawText(TextFormat("%i", counter), screenWidth/2 + border - 30, screenHeight + 2*border - border/2, 30, color);
