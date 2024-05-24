@@ -57,7 +57,7 @@ class Snake{
     public:
         deque<Vector2> body = {{2,3}, {3,3}, {4,3}};
 
-        
+
         Vector2 directionXR = {1,0};
         Vector2 directionXL = {-1,0};
         Vector2 directionYU = {0,-1};
@@ -74,7 +74,6 @@ class Snake{
         }
 
         void Update(){
-
             //right
             body.pop_front();
             body.push_back(Vector2Add(body[body.size()-1], direction));
@@ -84,8 +83,8 @@ class Snake{
         void Reset(){
             body = {{2,3}, {3,3}, {4,3}};
             direction = directionXR;
-            Update();
             counter = 0;
+            Update();
         }
 };
 
@@ -96,7 +95,21 @@ class Game{
 public:
     Snake snake = Snake();
     Food food = Food();
-    
+    Sound foodSound;
+    Sound wallSound;
+
+
+    Game(){
+        InitAudioDevice();
+        foodSound = LoadSound("sounds/point.mp3");
+        wallSound = LoadSound("sounds/hit.mp3");
+    }
+
+    ~Game(){
+        UnloadSound(foodSound);
+        UnloadSound(wallSound);
+        CloseAudioDevice();
+    }
 
     void Draw(){
         snake.Draw();
@@ -113,6 +126,7 @@ public:
             food.positionX = GetRandomValue(0,count-1);
             food.positionY = GetRandomValue(0,count-1);
             snake.body.push_front(snake.body[0]);
+            PlaySound(foodSound);
             counter++;
         };
     }
@@ -124,6 +138,7 @@ public:
         Vector2 down = {snake.body[snake.body.size()-1].x, (float)count};
 
         if(Vector2Equals(left, snake.body[snake.body.size()-1]) || Vector2Equals(right, snake.body[snake.body.size()-1]) || Vector2Equals(up, snake.body[snake.body.size()-1]) || Vector2Equals(down, snake.body[snake.body.size()-1])){
+            PlaySound(wallSound);
             snake.Reset();
             return true;
         }else{
@@ -137,10 +152,11 @@ public:
 
         for(int i = 0; i < snake.body.size() - 1; i++){
             if(Vector2Equals(snake.body[i], head)){
+                PlaySound(wallSound);
                 snake.Reset();
                 return true;
             }
-            
+
         }
 
         return false;
@@ -148,12 +164,22 @@ public:
 };
 
 
+///////////////////////////////////////////////////////////////////////funkcja zliczająca rekord
+
+int highscore = 0;
+int highCounter(int counter){
+
+    if(counter >= highscore){
+        highscore = counter;
+        return highscore;
+    }
+
+    return highscore;
+}
 
 ////////////////////////////////////////////////////////funkcja main
 int main()
 {
-
-    cout<<"Starting.."<<endl;
 
     const int screenWidth = sizeCell * count;
     const int screenHeight = sizeCell * count;
@@ -167,6 +193,7 @@ int main()
     bool right = true;
     bool up = false;
     bool down = false;
+    bool gamePaused = false;
 
     while (!WindowShouldClose())
     {
@@ -175,41 +202,49 @@ int main()
 
         game.Draw();
 
+        if (gamePaused) {
+            DrawText("Press any key to start..", screenWidth / 2 - border - 30, (screenHeight + border) / 2, 30, BLACK);
+            EndDrawing();
+            if (GetKeyPressed() != 0) {
+                gamePaused = false;
+            }
+            continue;
+        }
 
         ///////////////////////////////////////////////////////////////////////////ustawienie szybkości poruszania się węża
-        if(event(0.2)){
+        if (event(0.15)) {
             game.Update();
         }
 
-
         /////////////////////////////////////////////////////////////////////////////////////////reakcja na kolizje
-        if(game.boardCollision() || game.tailCollision()){
+        if (game.boardCollision() || game.tailCollision()) {
             right = true;
             left = false;
             up = false;
             down = false;
+            gamePaused = true;
         }
 
         ///////////////////////////////////////////////////////////////////////////////////////////////poruszanie się węża
-        if(IsKeyPressed(KEY_UP) && (right == true || left == true) && down == false){
+        if (IsKeyPressed(KEY_UP) && (right || left) && !down) {
             game.snake.direction = game.snake.directionYU;
             left = false;
             right = false;
             down = false;
-            up = true; 
-        }else if(IsKeyPressed(KEY_DOWN) && (right == true || left == true) && up == false){
+            up = true;
+        } else if (IsKeyPressed(KEY_DOWN) && (right || left) && !up) {
             game.snake.direction = game.snake.directionYD;
             left = false;
             right = false;
             down = true;
             up = false;
-        }else if(IsKeyPressed(KEY_RIGHT) && (up == true || down == true) && left == false){
+        } else if (IsKeyPressed(KEY_RIGHT) && (up || down) && !left) {
             game.snake.direction = game.snake.directionXR;
             left = false;
             right = true;
             down = false;
             up = false;
-        }else if(IsKeyPressed(KEY_LEFT) && (up == true || down == true) && right == false){
+        } else if (IsKeyPressed(KEY_LEFT) && (up || down) && !right) {
             game.snake.direction = game.snake.directionXL;
             left = true;
             right = false;
@@ -218,11 +253,17 @@ int main()
         }
 
         game.foodCollision();
+
+        highCounter(counter);
+
+
+        //////////////////////////////////////////////////////////////////////////////////////////////////rysowanie
         DrawRectangleLinesEx(Rectangle{(float)border-5, (float)border-5, (float)sizeCell*count + 10, (float)sizeCell*count + 10}, 5, color);
         DrawText("Snake", screenWidth/2 + border/2, 20, 30, color);
-        DrawText(TextFormat("%i", counter), screenWidth/2 + border, screenHeight + 2*border - border/2, 30, color);
+        DrawText(TextFormat("%i", counter), screenWidth/2 + border - 30, screenHeight + 2*border - border/2, 30, color);
+        DrawText(TextFormat("%i", highCounter(counter)), screenWidth/2 + border + 50, screenHeight + 2*border - border/2, 30, color);
         EndDrawing();
-        
+
     }
 
     CloseWindow();
