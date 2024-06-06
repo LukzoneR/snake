@@ -60,6 +60,8 @@ class Snake{
         Vector2 directionYD = {0,1};
         Vector2 direction = directionXR;
 
+        bool moved = false;
+
         void Draw(){
             for(int i = 0; i < body.size(); i++){
                 int x = body[i].x;
@@ -73,7 +75,7 @@ class Snake{
             //right
             body.pop_front();
             body.push_back(Vector2Add(body[body.size()-1], direction));
-
+            moved = true;
         }
 
         void Reset(){
@@ -81,6 +83,7 @@ class Snake{
             direction = directionXR;
             counter = 0;
             Update();
+            moved = false;
         }
 };
 
@@ -220,31 +223,38 @@ int main()
         }
 
         ///////////////////////////////////////////////////////////////////////////////////////////////poruszanie się węża
-        if (IsKeyPressed(KEY_UP) && (right || left) && !down) {
+        if(game.snake.moved){
+            if (IsKeyPressed(KEY_UP) && (right || left) && !down) {
             game.snake.direction = game.snake.directionYU;
             left = false;
             right = false;
             down = false;
             up = true;
+            game.snake.moved = false;
         } else if (IsKeyPressed(KEY_DOWN) && (right || left) && !up) {
             game.snake.direction = game.snake.directionYD;
             left = false;
             right = false;
             down = true;
             up = false;
+            game.snake.moved = false;
         } else if (IsKeyPressed(KEY_RIGHT) && (up || down) && !left) {
             game.snake.direction = game.snake.directionXR;
             left = false;
             right = true;
             down = false;
             up = false;
+            game.snake.moved = false;
         } else if (IsKeyPressed(KEY_LEFT) && (up || down) && !right) {
             game.snake.direction = game.snake.directionXL;
             left = true;
             right = false;
             down = false;
             up = false;
+            game.snake.moved = false;
         }
+        }
+        
 
         game.foodCollision();
 
