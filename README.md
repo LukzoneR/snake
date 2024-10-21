@@ -13,5 +13,6 @@ Simple C++ snake game
 </li>
 </ul>
 
-
-
+<b style="font-size:30px">Screenshots</b>
+<hr>
+![image](https://github.com/user-attachments/assets/bb30e1fd-58bc-4890-a8e7-c78c69c1ed51)
